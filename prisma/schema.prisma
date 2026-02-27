@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  pin       String
+  createdAt DateTime @default(now())
+
+  items     Item[]
+}
+
+model Item {
+  id          String   @id @default(uuid())
+  type        String   // "SCHEDULE_SLOT" | "EVENT"
+  title       String
+  description String?
+  date        DateTime? // For EVENT (tests, projects)
+  dayOfWeek   Int?      // For SCHEDULE_SLOT (1-7, 1=Monday)
+  hour        String?   // For SCHEDULE_SLOT (e.g. "08:00")
+  createdAt   DateTime @default(now())
+
+  userId      String?   // If null, it's a PUBLIC item created by Admin
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
