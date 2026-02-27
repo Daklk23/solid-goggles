@@ -2,24 +2,33 @@
 
 import { useState, useEffect } from 'react'
 
-export default function AddItemModal({ isOpen, onClose, onAdd, initialType = 'SCHEDULE_SLOT', initialDay = '1' }: { isOpen: boolean, onClose: () => void, onAdd: (data: any) => Promise<void>, initialType?: string, initialDay?: string }) {
+export default function AddItemModal({ isOpen, onClose, onAdd, initialType = 'SCHEDULE_SLOT', initialDay = '1', initialTime = '08:00', initialDate = '', initialData = null }: { isOpen: boolean, onClose: () => void, onAdd: (data: any) => Promise<void>, initialType?: string, initialDay?: string, initialTime?: string, initialDate?: string, initialData?: any }) {
     const [type, setType] = useState(initialType)
     const [title, setTitle] = useState('')
     const [desc, setDesc] = useState('')
     const [day, setDay] = useState(initialDay)
-    const [time, setTime] = useState('08:00')
+    const [time, setTime] = useState(initialTime)
     const [date, setDate] = useState('')
 
     useEffect(() => {
         if (isOpen) {
-            setType(initialType)
-            setDay(initialDay)
-            setTitle('')
-            setDesc('')
-            setTime('08:00')
-            setDate('')
+            if (initialData) {
+                setType(initialData.type)
+                setTitle(initialData.title)
+                setDesc(initialData.description || '')
+                setDay(initialData.dayOfWeek?.toString() || '1')
+                setTime(initialData.hour || '08:00')
+                setDate(initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '')
+            } else {
+                setType(initialType)
+                setDay(initialDay)
+                setTitle('')
+                setDesc('')
+                setTime(initialTime)
+                setDate(initialDate)
+            }
         }
-    }, [isOpen, initialType, initialDay])
+    }, [isOpen, initialType, initialDay, initialTime, initialDate, initialData])
 
     if (!isOpen) return null
 
@@ -31,14 +40,13 @@ export default function AddItemModal({ isOpen, onClose, onAdd, initialType = 'SC
             description: desc,
             ...(type === 'SCHEDULE_SLOT' ? { dayOfWeek: parseInt(day), hour: time } : { date: new Date(date).toISOString() })
         })
-        setTitle(''); setDesc(''); setDay('1'); setTime('08:00'); setDate('');
         onClose()
     }
 
     return (
         <div className="modal-backdrop">
             <div className="glass-panel modal">
-                <h2 className="section-title" style={{ marginTop: 0 }}>Dodaj novu stavku</h2>
+                <h2 className="section-title" style={{ marginTop: 0 }}>{initialData ? 'Izmeni stavku' : 'Dodaj novu stavku'}</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Tip stavke</label>
@@ -92,7 +100,7 @@ export default function AddItemModal({ isOpen, onClose, onAdd, initialType = 'SC
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                         <button type="button" onClick={onClose} className="btn-secondary" style={{ flex: 1 }}>Otkaži</button>
-                        <button type="submit" className="btn-primary" style={{ flex: 1 }}>Dodaj</button>
+                        <button type="submit" className="btn-primary" style={{ flex: 1 }}>{initialData ? 'Sačuvaj izmene' : 'Dodaj'}</button>
                     </div>
                 </form>
             </div>
